@@ -1,0 +1,38 @@
+{% extends 'mesajlar/base.html' %}
+
+{% block title %}
+    {% if mesaj %}Mesaj Düzenle{% else %}Yeni Mesaj{% endif %} - Motivasyon Mesajları
+{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">{% if mesaj %}Mesaj Düzenle{% else %}Yeni Mesaj Ekle{% endif %}</h1>
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="{{ form.baslik.id_for_label }}" class="form-label">Başlık:</label>
+                    {{ form.baslik.errors }}
+                    <input type="text" name="{{ form.baslik.name }}" id="{{ form.baslik.id_for_label }}" 
+                           class="form-control {% if form.baslik.errors %}is-invalid{% endif %}" 
+                           value="{{ form.baslik.value|default:'' }}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.icerik.id_for_label }}" class="form-label">İçerik:</label>
+                    {{ form.icerik.errors }}
+                    <textarea name="{{ form.icerik.name }}" id="{{ form.icerik.id_for_label }}" 
+                              class="form-control {% if form.icerik.errors %}is-invalid{% endif %}" 
+                              rows="6" required>{{ form.icerik.value|default:'' }}</textarea>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'mesaj_listesi' %}" class="btn btn-secondary">İptal</a>
+                    <button type="submit" class="btn btn-primary">{% if mesaj %}Güncelle{% else %}Kaydet{% endif %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
