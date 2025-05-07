@@ -1,10 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'mesajlar/base.html' %}
+
+{% block title %}{{ mesaj.baslik }} - Motivasyon Mesajları{% endblock %}
+
+{% block content %}
+    <div class="card animated-item">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{{ mesaj.baslik }}</h5>
+            <small class="text-muted"><i class="far fa-clock me-1"></i> {{ mesaj.tarih|date:"d.m.Y H:i" }}</small>
+        </div>
+        <div class="card-body">
+            <p class="card-text">{{ mesaj.icerik }}</p>
+            <footer class="blockquote-footer mt-3">
+                <i class="fas fa-user-circle me-1"></i> <cite title="Yazar">{{ mesaj.yazar.username }}</cite>
+            </footer>
+        </div>
+        <div class="card-footer bg-transparent">
+            <a href="{% url 'mesaj_listesi' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Geri Dön
+            </a>
+            {% if user == mesaj.yazar %}
+                <a href="{% url 'mesaj_duzenle' mesaj.pk %}" class="btn btn-primary">
+                    <i class="fas fa-edit me-2"></i>Düzenle
+                </a>
+                <a href="{% url 'mesaj_sil' mesaj.pk %}" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>Sil
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a href="{% url 'mesaj_listesi' %}" class="text-decoration-none">
+            <i class="fas fa-list me-1"></i> Tüm mesajları görüntüle
+        </a>
+    </div>
+{% endblock %}
