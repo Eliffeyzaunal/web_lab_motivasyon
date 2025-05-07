@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils import timezone
 from datetime import datetime, timedelta
 from .models import Mesaj
+from django.utils.html import mark_safe
 
 class TarihAraligi(admin.SimpleListFilter):
     """Özel bir filtre sınıfı - belirli tarih aralıklarına göre filtreler"""
@@ -58,19 +59,52 @@ class IcerikUzunlugu(admin.SimpleListFilter):
 
 @admin.register(Mesaj)
 class MesajAdmin(admin.ModelAdmin):
-    list_display = ('baslik', 'yazar', 'tarih', 'icerik_kisaltilmis', 'yorum_sayisi')
+    list_display = ('baslik', 'yazar', 'tarih', 'icerik_kisaltilmis', 'yorum_sayisi', 'created_at', 'updated_at')
     list_filter = ('tarih', 'yazar', TarihAraligi, IcerikUzunlugu)
-    search_fields = ('baslik', 'icerik')
+    search_fields = ('baslik', 'icerik', 'yazar__username')
     date_hierarchy = 'tarih'  # Tarih hiyerarşisi ekle
     list_per_page = 20  # Sayfa başına gösterilecek mesaj sayısı
+    list_display_links = ('baslik', 'icerik_kisaltilmis')
+    readonly_fields = ('tarih', 'preview_text', 'created_at', 'updated_at')
+    fieldsets = (
+        ('Mesaj Bilgileri', {
+            'fields': ('baslik', 'icerik', 'yazar')
+        }),
+        ('Önizleme', {
+            'fields': ('preview_text',),
+            'classes': ('collapse',)
+        }),
+        ('Tarih Bilgileri', {
+            'fields': ('tarih', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
     
     # Liste görünümünde görüntülenecek içeriği kısaltır
     def icerik_kisaltilmis(self, obj):
         return obj.icerik[:50] + '...' if len(obj.icerik) > 50 else obj.icerik
     icerik_kisaltilmis.short_description = 'İçerik'
     
+    # Mesajın HTML formatında önizlemesi
+    def preview_text(self, obj):
+        return mark_safe(f'<div style="padding: 10px; background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 4px;">{obj.icerik}</div>')
+    preview_text.short_description = 'İçerik Önizleme'
+    
     # Bu mesaja bağlı yorum sayısını göstermek için
     # Not: Eğer yorum modeli eklerseniz bu fonksiyon işe yarar
     def yorum_sayisi(self, obj):
         return 0  # Şu anda yorum özelliği olmadığı için 0 döner
     yorum_sayisi.short_description = 'Yorum Sayısı'
+    
+    def created_at(self, obj):
+        return obj.tarih.strftime("%Y-%m-%d %H:%M")
+    created_at.short_description = 'Oluşturma Tarihi'
+    
+    def updated_at(self, obj):
+        return timezone.now().strftime("%Y-%m-%d %H:%M")
+    updated_at.short_description = 'Son Güncelleme'
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Yeni bir nesne oluşturuyorsa
+            obj.yazar = request.user
+        super().save_model(request, obj, form, change)
