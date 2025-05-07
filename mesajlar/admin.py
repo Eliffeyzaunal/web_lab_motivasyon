@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from django.contrib.admin import AdminSite
 from django.db.models import Count
 from django.template.response import TemplateResponse
-from .models import Mesaj, Kategori
+from .models import Mesaj, Kategori, Etiket
 
 # Admin site adını ve başlığını değiştirme
 admin.site.site_header = 'Motivasyon Mesajları Yönetim Paneli'
@@ -154,6 +154,15 @@ class MesajAdmin(admin.ModelAdmin):
 class KategoriAdmin(admin.ModelAdmin):
     list_display = ('isim', 'aciklama', 'mesaj_sayisi')
     search_fields = ('isim', 'aciklama')
+    
+    def mesaj_sayisi(self, obj):
+        return obj.mesajlar.count()
+    mesaj_sayisi.short_description = 'Mesaj Sayısı'
+
+@admin.register(Etiket)
+class EtiketAdmin(admin.ModelAdmin):
+    list_display = ('isim', 'mesaj_sayisi')
+    search_fields = ('isim',)
     
     def mesaj_sayisi(self, obj):
         return obj.mesajlar.count()
