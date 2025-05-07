@@ -3,27 +3,56 @@
 {% block title %}Mesaj Sil - Motivasyon Mesajları{% endblock %}
 
 {% block content %}
-    <div class="card">
-        <div class="card-header bg-danger text-white">
-            <h5 class="mb-0">Mesajı Sil</h5>
-        </div>
-        <div class="card-body">
-            <p class="lead">Aşağıdaki mesajı silmek istediğinizden emin misiniz?</p>
-            
-            <blockquote class="blockquote">
-                <p class="mb-0">{{ mesaj.baslik }}</p>
-                <footer class="blockquote-footer">
-                    <cite title="Yazar">{{ mesaj.yazar.username }}</cite> - {{ mesaj.tarih|date:"d.m.Y H:i" }}
-                </footer>
-            </blockquote>
-            
-            <form method="post">
-                {% csrf_token %}
-                <div class="d-flex justify-content-between mt-4">
-                    <a href="{% url 'mesaj_detay' mesaj.pk %}" class="btn btn-secondary">İptal</a>
-                    <button type="submit" class="btn btn-danger">Evet, Sil</button>
-                </div>
-            </form>
-        </div>
+    <!-- Debug bilgisi -->
+    <div class="alert alert-info">
+        Mesaj sayısı: {{ mesajlar|length }}
     </div>
-{% endblock %}
+
+    <!-- Filtreleme formu -->
+    <form method="get" class="mb-4">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="arama" class="form-control" placeholder="Ara..."
+                       value="{{ arama_sorgusu }}">
+            </div>
+            <div class="col-md-2">
+                <select name="tarih" class="form-select">
+                    <option value="">Tüm Tarihler</option>
+                    <option value="bugun" {% if tarih_filtresi == 'bugun' %}selected{% endif %}>Bugün</option>
+                    <option value="hafta" {% if tarih_filtresi == 'hafta' %}selected{% endif %}>Bu Hafta</option>
+                    <option value="ay" {% if tarih_filtresi == 'ay' %}selected{% endif %}>Bu Ay</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Filtrele</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Mesaj listesi -->
+    {% if mesajlar %}
+        <div class="row">
+            {% for mesaj in mesajlar %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ mesaj.baslik }}</h5>
+                            <p class="card-text">{{ mesaj.icerik|truncatewords:20 }}</p>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">
+                                {{ mesaj.yazar.username }} - {{ mesaj.tarih|date:"d.m.Y" }}
+                            </small>
+                            <a href="{% url 'mesaj_detay' mesaj.pk %}" class="btn btn-sm btn-primary float-end">Detay</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            <p>Henüz hiç mesaj bulunmuyor. İlk mesajı siz eklemek ister misiniz?</p>
+            <a href="{% url 'mesaj_ekle' %}" class="btn btn-primary">Mesaj Ekle</a>
+        </div>
+    {% endif %}
+{% endblock %}
